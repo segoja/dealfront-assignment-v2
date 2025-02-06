@@ -20,6 +20,7 @@ export default class RepoListComponent extends Component {
   @tracked nameError = false;
   @tracked tokenError = false;
   @tracked repos = [];
+  @tracked searched = false;
 
   @tracked currentPage = 1;
   @tracked totalRepos = 0;
@@ -47,15 +48,15 @@ export default class RepoListComponent extends Component {
   }
 
   get cantFilter() {
-    return this.repos.length === 0 || this.isLoading;
+    return this.totalRepos === 0 || this.isLoading;
   }
 
-  get disableNext() {
-    return this.githubApi.currentPage >= this.githubApi.totalPages;
+  get showSalute() {
+    return this.name == '' || this.token == '';
   }
 
-  get disablePrev() {
-    return this.githubApi.currentPage <= 1;
+  get showLoading() {
+    return this.isLoading && this.totalRepos === 0;
   }
 
   @action checkEmpty() {
@@ -75,6 +76,7 @@ export default class RepoListComponent extends Component {
   async getRepoData() {
     this.checkEmpty();
     if (this.nameError || this.tokenError) {
+      this.searched = false;
       console.debug('Name or token is empty');
       return;
     } else {
@@ -111,7 +113,10 @@ export default class RepoListComponent extends Component {
       );
       this.repos = response.repos;
       this.totalPages = this.githubApi.extractTotalPages(response.headers);
+      this.language = '';
+      this.private = false;
       this.isLoading = false;
+      this.searched = true;
     }
   }
 

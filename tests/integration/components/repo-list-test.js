@@ -96,7 +96,7 @@ module('Integration | Component | repo-list', function (hooks) {
 
     assert.dom('input[name="name"]').exists();
     assert.dom('input[name="token"]').exists();
-    assert.dom('button.btn-success').hasText('Find Repos');
+    assert.dom('button.btn-success').hasText('Find Repositories');
   });
 
   test('it fetches and displays repositories', async function (assert) {

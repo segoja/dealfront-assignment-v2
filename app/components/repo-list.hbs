@@ -1,107 +1,140 @@
-<h2 class="h4">Search repositories</h2>
-<div class="row gx-1 align-items-end">
-    <div class="col-xs-12 col-md">
-        <div class="needs-validation {{if this.nameError "was-validated"}}">
-            <label for="name" class="form-label">Organization name
-            </label>
-            {{#if this.nameError}}
-                <small class="invalid-feedback">
-                    * Required field
-                </small>
-            {{/if}}
-            <input
-                type="text"
-                value={{this.name}}
-                class="form-control {{if this.nameError "is-invalid"}}"
-                placeholder="github"
-                required
-                aria-label="Organization name"
-                name="name"
-                {{on "input" this.updateValue}}
-            />
-        </div> 
-    </div>
-    <div class="col-xs-12 col-md">
-        <div class="needs-validation {{if this.tokenError "was-validated"}}">
-            <label for="token" class="form-label">Github access token (<a href="https://github.com/settings/tokens" class="link-underline-dark" target="_blank" rel="noopener noreferrer">Get yours</a>)
-            </label>
-            {{#if this.tokenError}}
-                <small class="invalid-feedback">
-                    * Required field
-                </small>
-            {{/if}}    
-            <input
-                type="text"
-                value={{this.token}}
-                class="form-control {{if this.tokenError "is-invalid"}}"
-                placeholder="Enter your Github access token"
-                required 
-                aria-label="Github access token"
-                name="token"
-                {{on "input" this.updateValue}}
-            />
-        </div> 
-    </div>
-    <div class="col-xs-12 col-md-auto pt-2 pt-md-0">
-        <button type="button" class="btn btn-success float-end" {{on "click" this.getRepoData}}>Find Repos</button>
-    </div>
-</div> 
-<hr>
-<div class="row">
-    <div class="col-xs-12 col-md-4">
-        <h3 class="h5">Filter current repos</h3>
-        <div>
-            <label for="language" class="form-label">Programming Language</label>
-            <input
-                type="text"
-                value={{this.language}}
-                class="form-control"
-                placeholder="Enter language"
-                aria-label="Language"
-                name="language"
-                disabled={{this.cantFilter}}
-                {{on "input" this.updateValue}}
-            />
+    <div class="container-fluid container-md">
+    <h2 class="h4">Search repositories</h2>
+    <div class="row gx-1 align-items-end">
+        <div class="col-xs-12 col-md">
+            <div class="needs-validation {{if this.nameError "was-validated"}}">
+                <label for="name" class="form-label">Organization name
+                </label>
+                {{#if this.nameError}}
+                    <small class="invalid-feedback">
+                        * Required field
+                    </small>
+                {{/if}}
+                <input
+                    type="text"
+                    value={{this.name}}
+                    class="form-control {{if this.nameError "is-invalid"}}"
+                    placeholder="Enter name"
+                    required
+                    aria-label="Organization name"
+                    name="name"
+                    {{on "input" this.updateValue}}
+                />
+            </div> 
         </div>
-        <div class="form-check py-3">
-            <label for="private" class="form-check-label">Exclude private repositories</label>
-            <input 
-                type="checkbox"
-                name="private" 
-                checked={{this.private}}
-                class="form-check-input"
-                aria-label="Exclude private repositories" 
-                disabled={{this.cantFilter}}
-                {{on "change" this.updateValue}}
-            />
-        </div>        
-    </div>
-    <div class="col">
-        <hr class="d-block d-md-none my-0">
-        {{#if this.errorMessage}}
-            <div class="alert alert-danger" role="alert">
-                <FaIcon @icon="exclamation-triangle" @size="1x" />
-                {{this.errorMessage}}
-                <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="col-xs-12 col-md">
+            <div class="needs-validation {{if this.tokenError "was-validated"}}">
+                <label for="token" class="form-label">Github access token (<a href="https://github.com/settings/tokens" class="link-underline-dark" target="_blank" rel="noopener noreferrer">Get yours</a>)
+                </label>
+                {{#if this.tokenError}}
+                    <small class="invalid-feedback">
+                        * Required field
+                    </small>
+                {{/if}}    
+                <input
+                    type="text"
+                    value={{this.token}}
+                    class="form-control {{if this.tokenError "is-invalid"}}"
+                    placeholder="Enter token"
+                    required 
+                    aria-label="Github access token"
+                    name="token"
+                    {{on "input" this.updateValue}}
+                />
+            </div> 
+        </div>
+        <div class="col-xs-12 col-md-auto pt-2 pt-md-0">
+            <button type="button" class="btn btn-success float-end" {{on "click" this.getRepoData}}>Find Repositories</button>
+        </div>
+    </div> 
+    <hr>
+    <div class="row">
+        <div class={{if this.cantFilter (if this.totalRepos "col-xs-12 col-md-4" "d-none") "col-xs-12 col-md-4"}}>
+            <h3 class="h6">Filter results</h3>
+            <div>
+                <label for="language" class="form-label">Programming Language</label>
+                <input
+                    type="text"
+                    value={{this.language}}
+                    class="form-control"
+                    placeholder="Enter language"
+                    aria-label="Language"
+                    name="language"
+                    disabled={{this.cantFilter}}
+                    {{on "input" this.updateValue}}
+                />
             </div>
-        {{/if}}
-        {{#if this.filteredRepos}}
-            <div class="w-100 py-2 mb-3 border-bottom">
-                <span>{{this.repos.length}} repos loaded out of {{this.totalRepos}}. {{#if this.isFiltered }} After filtering, {{this.filteredRepos.length}} out of {{this.repos.length}} repos{{/if}}</span>
-            </div>
-            {{#each this.filteredRepos as |repo|}}
-                <RepoItem @repo={{repo}} @token={{this.token}} /> 
-            {{/each}}
-            {{#if this.thereIsMore}}
-                <div class="row">
-                    <div class="col">{{#if this.isLoading}} <FaIcon @icon="spinner" @spin={{true}} /> {{/if}}</div>
-                    <div class="col-auto"><button type="button" {{on "click" this.loadMore}} class="btn btn-link link-underline-dark">Load more</button></div>
+            <div class="form-check py-3">
+                <label for="private" class="form-check-label">Exclude private repositories</label>
+                <input 
+                    type="checkbox"
+                    name="private" 
+                    checked={{this.private}}
+                    class="form-check-input"
+                    aria-label="Exclude private repositories" 
+                    disabled={{this.cantFilter}}
+                    {{on "change" this.updateValue}}
+                />
+            </div>        
+        </div>
+        <div class="col">
+            <hr class="d-block d-md-none my-0">
+            {{#if this.errorMessage}}
+                <div class="alert alert-danger" role="alert">
+                    <FaIcon @icon="exclamation-triangle" @size="1x" />
+                    {{this.errorMessage}}
+                    <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            {{else}}
+                {{#if this.showLoading}}
+                    <div class="w-100 text-center" role="alert">
+                        Loading <FaIcon @icon="spinner" @size="1x" @spin={{true}} />
+                    </div>
+                {{else}}
+                    {{#if this.totalRepos}}
+                        {{#if this.filteredRepos}}
+                            <div class="w-100 py-2 mb-3 border-bottom">
+                                <span>{{this.repos.length}} repos loaded out of {{this.totalRepos}}. {{#if this.isFiltered }} After filtering, {{this.filteredRepos.length}} out of {{this.repos.length}} repos{{/if}}</span>
+                            </div>
+                            {{#each this.filteredRepos as |repo|}}
+                                <RepoItem @repo={{repo}} @token={{this.token}} /> 
+                            {{/each}}
+                            {{#if this.thereIsMore}}
+                                <div class="row">
+                                    <div class="col">{{#if this.isLoading}} <FaIcon @icon="spinner" @spin={{true}} /> {{/if}}</div>
+                                    <div class="col-auto"><button type="button" {{on "click" this.loadMore}} class="btn btn-link link-underline-dark">Load more</button></div>
+                                </div>
+                            {{/if}}
+                        {{else}}
+                            {{#if this.isLoading}}
+                                <div class="w-100 text-center" role="alert">
+                                    Loading <FaIcon @icon="spinner" @size="1x" @spin={{true}} />
+                                </div>
+                            {{else}}
+                                <div class="alert alert-info text-center" role="alert">
+                                    <p>No repositories match the criteria.</p>
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    {{else}}
+                        {{#if this.showSalute}}
+                            <div class="alert alert-default text-center" role="alert">
+                                <p>Enter an organization name and a Github access token to start searching.</p>
+                            </div>
+                        {{else}}
+                            {{#if this.searched}}
+                                <div class="alert alert-default text-center" role="alert">
+                                    <p>No repositories found.</p>
+                                </div>
+                            {{else}}
+                                <div class="alert alert-default text-center" role="alert">
+                                    <p>Now press Find!</p>
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
             {{/if}}
-        {{else}}
-            <div class="alert alert-default" role="alert">
-                <p>No repositories found.</p>
-            </div>
-        {{/if}}
+        </div>
     </div>
 </div>
