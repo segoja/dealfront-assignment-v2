@@ -139,6 +139,10 @@ module('Integration | Component | repo-list', function (hooks) {
 
     assert.dom('#repo-1296270').doesNotExist();
     assert.dom('#repo-1296271').exists();
+
+    await fillIn('input[name="language"]', 'impossiblelanguage');
+
+    assert.dom('.alert-info').exists();
   });
 
   test('it filters out private repositories', async function (assert) {
