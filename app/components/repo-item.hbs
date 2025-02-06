@@ -1,0 +1,41 @@
+<div class="w-100 border-bottom mb-3">
+    <div class="row gx-1">
+        <div class="col-auto">
+            <h5><a href={{@repo.url}} class="link-underline-dark" target="_blank" rel="noopener noreferrer">{{@repo.name}}</a></h5> 
+        </div>
+        <div class="col-auto">
+            <span class="badge rounded-pill border border-secondary text-muted"> {{if @repo.private "Private" "Public"}} </span>
+        </div>
+    </div> 
+    <div class="w-100">
+        <div class="text-muted"><small>Language: {{@repo.language}}</small></div>
+        <div>Description: <em>{{@repo.description}}</em></div>
+        <div class="pb-3"><small>Branches:</small> 
+            {{#if this.notReady}}
+                <FaIcon @icon="spinner" @size="1x" @spin={{true}} />
+            {{else}} 
+                {{this.totalBranches}}
+                {{#if this.totalBranches}}
+                    <button type="button" {{on "click" this.toggleBranches}} class="btn btn-sm btn-link link-underline-dark" title={{if this.hasBranches "Hide" "Show"}}>                       
+                        <FaIcon @icon={{if this.hasBranches "square-minus" "square-plus"}} @size="1x" />
+                    </button>
+                    {{#if this.hasBranches}}
+                        <ul class="list-group">
+                            {{#each this.branches as |branch|}}
+                                <li class="list-group-item">
+                                    <a href="https://github.com/{{@repo.owner}}/{{@repo.name}}/tree/{{branch.name}}" class="link-underline-dark text-small" target="_blank" rel="noopener noreferrer"> {{branch.name}}</a>
+                                </li>
+                            {{/each}}
+                        </ul>
+                        {{#if this.thereIsMore}}
+                            <div class="row">
+                                <div class="col">{{#if this.isLoading}} <FaIcon @icon="spinner" @size="1x" @spin={{true}} /> {{/if}}</div>
+                                <div class="col-auto"><button type="button" {{on "click" this.loadMore}} class="btn btn-sm btn-link link-underline-dark">Load more</button></div>
+                            </div>
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
+            {{/if}}
+        </div>
+    </div>
+</div>

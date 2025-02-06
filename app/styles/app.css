@@ -1,1 +1,12 @@
 /* Ember supports plain CSS out of the box. More info: https://cli.emberjs.com/release/advanced-use/stylesheets/ */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.scrollable {
+    max-height: 100% !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
