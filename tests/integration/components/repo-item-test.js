@@ -137,6 +137,6 @@ module('Integration | Component | repo-item', function (hooks) {
 
     await render(hbs`<RepoItem @repo={{this.repo}} @token={{this.token}} />`);
 
-    assert.dom('.alert-danger').hasTextContaining('API Error');
+    assert.dom('.alert-default').hasTextContaining('API Error');
   });
 });

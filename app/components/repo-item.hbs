@@ -16,9 +16,9 @@
             {{else}} 
                 {{this.totalBranches}}
                 {{#if this.errorMessage}}
-                    <div class="alert alert-danger p-0" role="alert">
+                    <div class="alert alert-default p-0" role="alert">
                         <FaIcon @icon="exclamation-triangle" @size="1x" />
-                        <small>{{this.errorMessage}}</small>
+                        <small class="text-danger">{{this.errorMessage}}</small>
                         <button type="button" class="btn-close float-end btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {{/if}}
