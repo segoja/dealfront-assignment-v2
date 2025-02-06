@@ -1,4 +1,4 @@
-<h2 class="h4">Search</h2>
+<h2 class="h4">Search repositories</h2>
 <div class="row gx-1 align-items-end">
     <div class="col-xs-12 col-md">
         <div class="needs-validation {{if this.nameError "was-validated"}}">
@@ -42,8 +42,8 @@
             />
         </div> 
     </div>
-    <div class="col-auto">
-        <button type="button" class="btn btn-success" {{on "click" this.getRepoData}}>Find Repos</button>
+    <div class="col-xs-12 col-md-auto pt-2 pt-md-0">
+        <button type="button" class="btn btn-success float-end" {{on "click" this.getRepoData}}>Find Repos</button>
     </div>
 </div> 
 <hr>

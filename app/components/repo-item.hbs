@@ -1,4 +1,4 @@
-<div class="w-100 border-bottom mb-3">
+<div class="w-100 border-bottom mb-3" id="repo-{{@repo.id}}">
     <div class="row gx-1">
         <div class="col-auto">
             <h5><a href={{@repo.url}} class="link-underline-dark" target="_blank" rel="noopener noreferrer">{{@repo.name}}</a></h5> 
@@ -15,6 +15,14 @@
                 <FaIcon @icon="spinner" @size="1x" @spin={{true}} />
             {{else}} 
                 {{this.totalBranches}}
+                {{#if this.errorMessage}}
+                    <div class="alert alert-danger p-0" role="alert">
+                        <FaIcon @icon="exclamation-triangle" @size="1x" />
+                        <small>{{this.errorMessage}}</small>
+                        <button type="button" class="btn-close float-end btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {{/if}}
+
                 {{#if this.totalBranches}}
                     <button type="button" {{on "click" this.toggleBranches}} class="btn btn-sm btn-link link-underline-dark" title={{if this.hasBranches "Hide" "Show"}}>                       
                         <FaIcon @icon={{if this.hasBranches "square-minus" "square-plus"}} @size="1x" />
@@ -30,7 +38,7 @@
                         {{#if this.thereIsMore}}
                             <div class="row">
                                 <div class="col">{{#if this.isLoading}} <FaIcon @icon="spinner" @size="1x" @spin={{true}} /> {{/if}}</div>
-                                <div class="col-auto"><button type="button" {{on "click" this.loadMore}} class="btn btn-sm btn-link link-underline-dark">Load more</button></div>
+                                <div class="col-auto"><button type="button" {{on "click" this.loadMore}} class="btn btn-sm btn-link link-underline-dark" title="Load more">Load more</button></div>
                             </div>
                         {{/if}}
                     {{/if}}

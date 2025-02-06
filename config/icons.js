@@ -1,7 +1,5 @@
 module.exports = function () {
   return {
-    'free-solid-svg-icons': 'all',
-    'free-regular-svg-icons': 'all',
-    'free-brands-svg-icons': 'all',
+    'free-solid-svg-icons': ['code-branch', 'copyright', 'square-plus', 'square-minus', 'exclamation-triangle', 'spinner'],
   };
 };

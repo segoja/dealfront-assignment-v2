@@ -3,13 +3,10 @@
     <nav class="navbar navbar-expand navbar-dark bg-black px-3">   
         <div class="container-fluid">
             <div class="navbar-brand"><FaIcon @icon="code-branch" @size="1x"  @prefix="fas"/> Repo Viewer</div>
-            <ul class="navbar-nav ms-auto">       
-                <li class="nav-item"><LinkTo @route="index" class="nav-link"><FaIcon @icon="cog"/></LinkTo></li>           
-            </ul>          
         </div>
     </nav>
 </header>
-<main class="container-fluid flex-fill overflow-auto py-3 px-5">
+<main class="container-fluid flex-fill overflow-auto py-3 px-md-5">
     <RepoList />
 </main>
 <footer class="bg-black text-white py-3">

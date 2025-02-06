@@ -1,19 +1,13 @@
 import Service from '@ember/service';
-import { tracked } from '@glimmer/tracking';
 
 export default class GithubApiService extends Service {
-  
-  get filteredRepos() {}
-
-  async fetchRepos(name, token, type = 'all', page = 1, perPage = 30) {
+  async fetchRepos(org, token, type = 'all', page = 1, perPage = 30) {
     try {
-      if (!name || !token) {
+      if (!org || !token) {
         throw new Error('Organization name and token are required.');
       }
-      let targetUrl = `https://api.github.com/user/repos?type=${type}&per_page=${perPage}&page=${page}` // To get my own repos
-      // let targetUrl = `https://api.github.com/orgs/${name}/repos?type=${type}&per_page=${perPage}&page=${page}`;
-
-      // We use fetch() to make a request to the GitHub API instead of Octokit.js because it is easier to mock in tests.
+      // let targetUrl = `https://api.github.com/user/repos?type=${type}&per_page=${perPage}&page=${page}`; // To get my own repos
+      let targetUrl = `https://api.github.com/orgs/${org}/repos?type=${type}&per_page=${perPage}&page=${page}`;
 
       let response = await fetch(targetUrl, {
         headers: {
@@ -22,12 +16,30 @@ export default class GithubApiService extends Service {
         },
       });
 
-      if (!response.ok)
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        switch (response.status) {
+          case 403: {
+            throw new Error('GitHub API error 403: Forbidden');
+          }
+          case 404: {
+            throw new Error('GitHub API error 404: Organization not found');
+          }
+          case 401: {
+            throw new Error('GitHub API error 401: Unauthorized Access');
+          }
+          default: {
+            throw new Error(
+              'GitHub API error: ' + response.status + response.statusText,
+            );
+          }
+        }
+      }
 
-      let data = await response.json();
+      let data = (await response.json()) || [];
+
       let repos = data.map((repo) => {
         return {
+          id: repo.id,
           name: repo.name,
           owner: repo.owner.login,
           description: repo.description,
@@ -35,8 +47,8 @@ export default class GithubApiService extends Service {
           language: repo.language || 'Unknown',
           private: repo.private,
           branchesUrl: repo.branches_url
-          ? repo.branches_url.replace('{/branch}', '')
-          : null
+            ? repo.branches_url.replace('{/branch}', '')
+            : null,
         };
       });
 
@@ -53,17 +65,23 @@ export default class GithubApiService extends Service {
         throw new Error('Organization token is required.');
       }
 
-      let response = await fetch(branchesUrl + `?per_page=${perPage}&page=${page}`, {
-        headers: {
-          Authorization: `token ${token}`,
-          Accept: 'vnd.github+json', // Setting to application/vnd.github+json is recommended.
+      let response = await fetch(
+        branchesUrl + `?per_page=${perPage}&page=${page}`,
+        {
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: 'vnd.github+json', // Setting to application/vnd.github+json is recommended.
+          },
         },
-      });
+      );
 
-      if (!response.ok)
-        throw new Error(`GitHub API error: ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(
+          'GitHub API error: ' + response.status + response.statusText,
+        );
+      }
+      let data = (await response.json()) || [];
 
-      let data = await response.json();
       let branches = data.map((branch) => {
         return {
           name: branch.name,
@@ -73,10 +91,9 @@ export default class GithubApiService extends Service {
       return { branches, headers: response.headers, error: null };
     } catch (error) {
       // console.error('Error fetching repositories:', error);
-      return { branches: [], headers: [], error: error.message }; 
+      return { branches: [], headers: [], error: error.message };
     }
   }
-  
 
   /**
    * Extracts the total number of pages from a Link header.
