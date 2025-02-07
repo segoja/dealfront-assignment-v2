@@ -92,7 +92,7 @@
                     </div>
                 {{else}}
                     {{#if this.totalRepos}}
-                        {{#if this.filteredRepos}}
+                        {{#if this.filteredRepos.length}}
                             <div class="w-100 py-2 mb-3 border-bottom">
                                 <span>{{this.repos.length}} repos loaded out of {{this.totalRepos}}. {{#if this.isFiltered }} After filtering, {{this.filteredRepos.length}} out of {{this.repos.length}} repos{{/if}}</span>
                             </div>

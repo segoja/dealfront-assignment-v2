@@ -5,6 +5,7 @@ import { service } from '@ember/service';
 
 export default class RepoListComponent extends Component {
   @service githubApi;
+  @service store;
 
   constructor() {
     super(...arguments);
@@ -72,8 +73,12 @@ export default class RepoListComponent extends Component {
     }
   }
 
+  /*
   @action
   async getRepoData() {
+
+    console.log('ABout to fetch: ', this.name, this.token);
+
     this.checkEmpty();
     if (this.nameError || this.tokenError) {
       this.searched = false;
@@ -87,7 +92,6 @@ export default class RepoListComponent extends Component {
       this.currentPage = 1;
       console.debug('Fetching repositories...');
       this.isLoading = true;
-
       let { headers, error } = await this.githubApi.fetchRepos(
         this.name,
         this.token,
@@ -112,6 +116,7 @@ export default class RepoListComponent extends Component {
         this.currentPage,
       );
       this.repos = response.repos;
+      
       this.totalPages = this.githubApi.extractTotalPages(response.headers);
       this.language = '';
       this.private = false;
@@ -120,19 +125,101 @@ export default class RepoListComponent extends Component {
     }
   }
 
+      */
+  @action
+  async getRepoData() {
+    this.checkEmpty();
+    if (this.nameError || this.tokenError) {
+      this.searched = false;
+      console.debug('Name or token is empty');
+      return;
+    } else {
+      let token = this.token;
+      let org = this.name;
+      let page = this.currentPage;
+      this.errorMessage = '';
+      this.repos = [];
+      this.nameError = false;
+      this.tokenError = false;
+      this.currentPage = 1;
+      console.debug('Fetching repositories...');
+      this.isLoading = true;
+      try {
+        let totalrepos = await this.store.query('repo', {
+          org,
+          token,
+          page: 1,
+          perPage: 1,
+        });
+        this.totalRepos = totalrepos.meta?.totalPages || 1; // Default to 1 to avoid null
+        let repos = await this.store.query('repo', {
+          org,
+          token,
+          page,
+          perPage: 30,
+        });
+        this.totalPages = repos.meta?.totalPages || 1; // Default to 1 to avoid null
+
+        repos = [...(await repos.slice())];
+        repos = repos.map((repo) => ({
+          id: repo.id,
+          name: repo.name,
+          owner: repo.owner,
+          description: repo.description,
+          url: repo.url,
+          language: repo.language,
+          private: repo.private,
+          branchesUrl: repo.branchesUrl,
+        }));
+        this.repos = repos;
+        this.language = '';
+        this.private = false;
+        this.isLoading = false;
+        this.searched = true;
+        console.log('Total pages: ', this.totalPages);
+      } catch (error) {
+        this.errorMessage = error.message;
+        this.isLoading = false;
+        console.log('Error: ', error);
+      }
+    }
+  }
+
   @action
   async loadMore() {
-    if (this.currentPage <= this.totalPages) {
-      this.currentPage++;
-      this.isLoading = true;
-      let response = await this.githubApi.fetchRepos(
-        this.name,
-        this.token,
-        'all',
-        this.currentPage,
-      );
-      this.repos = this.repos.concat(response.repos);
-      this.isLoading = false;
+    if (this.currentPage < this.totalPages) {
+      try {
+        this.currentPage++;
+        let token = this.token;
+        let org = this.name;
+        let page = this.currentPage;
+        this.isLoading = true;
+        let moreRepos = await this.store.query('repo', {
+          org,
+          token,
+          page,
+          perPage: 30,
+        });
+
+        moreRepos = [...(await moreRepos.slice())];
+        moreRepos = moreRepos.map((repo) => ({
+          id: repo.id,
+          name: repo.name,
+          owner: repo.owner,
+          description: repo.description,
+          url: repo.url,
+          language: repo.language,
+          private: repo.private,
+          branchesUrl: repo.branchesUrl,
+        }));
+        this.repos = this.repos.concat(moreRepos);
+        console.log('Repos: ', this.repos);
+        this.isLoading = false;
+      } catch (error) {
+        this.errorMessage = error.message;
+        this.isLoading = false;
+        console.log('Error: ', error);
+      }
     }
   }
 }

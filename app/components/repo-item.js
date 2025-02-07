@@ -5,6 +5,7 @@ import { inject as service } from '@ember/service';
 
 export default class RepoItem extends Component {
   @service githubApi;
+  @service store;
   @tracked branches = [];
   @tracked isLoading = false;
   @tracked hasBranches = false;
@@ -28,23 +29,51 @@ export default class RepoItem extends Component {
 
   @action
   async getBranches() {
-    if (!this.args.token || !this.args.repo.branchesUrl) {
+    if (!this.args.token || !this.args.repo) {
       console.debug('Token is empty');
       return;
     } else {
       this.isLoading = true;
-      let response = await this.githubApi.fetchBranches(
-        this.args.repo.branchesUrl,
-        this.args.token,
-      );
-      this.totalPages = this.githubApi.extractTotalPages(response.headers);
-      this.branches = response.branches;
-      this.isLoading = false;
+
+      this.isLoading = true;
+      this.errorMessage = '';
+      this.currentPage = 1;
+
+      let token = this.args.token;
+      let repoId = this.args.repo.id;
+      let repoName = this.args.repo.name;
+      let org = this.args.repo.owner;
+      let page = this.currentPage;
+      try {
+        let branches = await this.store.query('branch', {
+          repoId,
+          repoName,
+          org,
+          token,
+          page,
+          perPage: 10,
+        });
+        this.totalPages = branches.meta?.totalPages || 1; // Default to 1 to avoid null
+        branches = await branches.slice();
+        branches = branches.map((branch) => ({
+          id: branch.id,
+          name: branch.name,
+          protected: branch.protected,
+        }));
+        this.branches = branches;
+        console.log('Branches: ', this.branches);
+        this.isLoading = false;
+      } catch (error) {
+        this.errorMessage = error.message;
+        this.isLoading = false;
+        console.log('Error: ', error);
+      }
     }
   }
   @action
   async getTotalBranches() {
-    if (!this.args.token || !this.args.repo.branchesUrl) {
+    // this.store.findAll('branch', { adapterOptions: { repoId: this.args.repo.id, page: 1, perPage: 10 } });
+    if (!this.args.token || !this.args.repo) {
       console.debug('Token is empty');
       return;
     } else {
@@ -52,22 +81,27 @@ export default class RepoItem extends Component {
       this.errorMessage = '';
       this.currentPage = 1;
 
-      // We ask for one item per page so we can get the total number of items with the Link header
-      let { headers, error } = await this.githubApi.fetchBranches(
-        this.args.repo.branchesUrl,
-        this.args.token,
-        1,
-        1,
-      );
+      let token = this.args.token;
+      let repoId = this.args.repo.id;
+      let repoName = this.args.repo.name;
+      let org = this.args.repo.owner;
 
-      if (error) {
-        this.errorMessage = error;
+      try {
+        let totalbranches = await this.store.query('branch', {
+          repoId,
+          repoName,
+          org,
+          token,
+          page: 1,
+          perPage: 1,
+        });
+        this.totalBranches = totalbranches.meta?.totalPages || 1; // Default to 1 to avoid null
         this.isLoading = false;
-        return;
+      } catch (error) {
+        this.errorMessage = error.message;
+        this.isLoading = false;
+        console.log('Error: ', error);
       }
-
-      this.totalBranches = this.githubApi.extractTotalPages(headers);
-      this.isLoading = false;
     }
   }
 
@@ -85,13 +119,35 @@ export default class RepoItem extends Component {
       console.log('Loading more branches...');
       this.currentPage++;
       this.isLoading = true;
-      let response = await this.githubApi.fetchBranches(
-        this.args.repo.branchesUrl,
-        this.args.token,
-        this.currentPage,
-      );
-      this.branches = this.branches.concat(response.branches);
-      this.isLoading = false;
+
+      let token = this.args.token;
+      let repoId = this.args.repo.id;
+      let repoName = this.args.repo.name;
+      let org = this.args.repo.owner;
+      let page = this.currentPage;
+      try {
+        let moreBranches = await this.store.query('branch', {
+          repoId,
+          repoName,
+          org,
+          token,
+          page,
+          perPage: 10,
+        });
+        moreBranches = await moreBranches.slice();
+        moreBranches = moreBranches.map((branch) => ({
+          id: branch.id,
+          name: branch.name,
+          protected: branch.protected,
+        }));
+
+        this.branches = this.branches.concat(moreBranches);
+        this.isLoading = false;
+      } catch (error) {
+        this.errorMessage = error.message;
+        this.isLoading = false;
+        console.log('Error: ', error);
+      }
     }
   }
 }

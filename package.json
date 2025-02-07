@@ -82,6 +82,7 @@
     "edition": "octane"
   },
   "dependencies": {
+    "@octokit/rest": "^21.1.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3"
   }

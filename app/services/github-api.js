@@ -1,6 +1,10 @@
 import Service from '@ember/service';
+import { tracked } from '@glimmer/tracking';
 
 export default class GithubApiService extends Service {
+  @tracked token = '';
+  @tracked name = '';
+
   async fetchRepos(org, token, type = 'all', page = 1, perPage = 30) {
     try {
       if (!org || !token) {
