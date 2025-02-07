@@ -20,7 +20,7 @@ module.exports = function (environment) {
     },
     // Disable Mirage
     'ember-cli-mirage': {
-      enabled: true,
+      enabled: environment !== 'production',
     },
   };
 
