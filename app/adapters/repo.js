@@ -20,7 +20,7 @@ export default class RepoAdapter extends RESTAdapter {
       page,
     });
 
-    let totalPages = this.extractTotalPages(response.headers) || 1; // Ensure a default value
+    let totalPages = this.extractTotalPages(response.headers) || 0;
 
     return {
       data: response.data,
@@ -30,7 +30,7 @@ export default class RepoAdapter extends RESTAdapter {
 
   extractTotalPages(headers) {
     let linkHeader = headers?.link;
-    if (!linkHeader) return 1;
+    if (!linkHeader) return 0;
 
     let lastPageMatch = linkHeader.match(/&page=(\d+)>; rel="last"/);
     return lastPageMatch ? Number(lastPageMatch[1]) : 1;

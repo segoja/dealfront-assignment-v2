@@ -2,93 +2,25 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'repo-viewer/tests/helpers';
 import { render, click } from '@ember/test-helpers';
 import { hbs } from 'ember-cli-htmlbars';
-import Service from '@ember/service';
-
-// Mock GitHub API Service
-class MockGithubApiService extends Service {
-  async fetchBranches(branchesUrl, token, page = 1, perPage = 10) {
-    if (!branchesUrl || !token) {
-      return {
-        branches: [],
-        headers: [],
-        error: 'Organization token is required.',
-      };
-    }
-
-    if (
-      branchesUrl ===
-      'https://api.github.com/repos/test-user/empty-repo/branches'
-    ) {
-      return {
-        branches: [],
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        error: null,
-      };
-    }
-
-    if (perPage == 1) {
-      return {
-        branches: [
-          ...[...Array(20).keys()].map((i) => ({
-            name: `branch-${i + 1}`,
-            protected: (i + 1) % 2 === 0, // Alternate protection
-          })),
-        ],
-        headers: new Map([['Link', '20']]),
-        error: null,
-      };
-    }
-
-    if (page === 1) {
-      return {
-        branches: [
-          ...[...Array(10).keys()].map((i) => ({
-            name: `branch-${i + 1}`,
-            protected: (i + 1) % 2 === 0, // Alternate protection
-          })),
-        ],
-        headers: new Map([['Link', '2']]),
-        error: null,
-      };
-    } else if (page === 2) {
-      return {
-        branches: [
-          ...[...Array(10).keys()].map((i) => ({
-            name: `branch-${i + 10}`,
-            protected: (i + 1) % 2 === 0, // Alternate protection
-          })),
-        ],
-        headers: new Map([['Link', '2']]),
-        error: null,
-      };
-    }
-
-    return { branches: [], headers: new Map(), error: null };
-  }
-
-  extractTotalPages(headers) {
-    return Number(headers.get('Link'));
-  }
-}
+import { setupMirage } from 'ember-cli-mirage/test-support';
+import { Response } from 'miragejs';
 
 module('Integration | Component | repo-item', function (hooks) {
   setupRenderingTest(hooks);
+  setupMirage(hooks);
 
   hooks.beforeEach(function () {
-    this.owner.register('service:githubApi', MockGithubApiService);
-
-    this.set('repo', {
-      id: 1296270,
+    this.repo = {
+      id: '10',
       name: 'test-repo',
       owner: 'test-user',
       description: 'A test repo',
       url: 'https://github.com/test-user/test-repo',
       language: 'JavaScript',
       private: false,
-      branchesUrl: 'https://api.github.com/repos/test-user/test-repo/branches',
-    });
+    };
 
-    this.set('token', 'fake-token');
+    this.token = 'fake-token';
   });
 
   test('it renders repo details correctly', async function (assert) {
@@ -106,7 +38,7 @@ module('Integration | Component | repo-item', function (hooks) {
 
     assert.dom('.list-group').doesNotExist();
 
-    await click('#repo-1296270 button[title="Show"]');
+    await click('button[title="Show"]');
 
     assert.dom('.list-group').exists();
     assert.dom('.list-group-item').exists({ count: 10 });
@@ -126,12 +58,10 @@ module('Integration | Component | repo-item', function (hooks) {
   });
 
   test('it handles API errors checking number of branches', async function (assert) {
-    this.owner.register(
-      'service:githubApi',
-      class extends MockGithubApiService {
-        async fetchBranches() {
-          return { branches: [], headers: [], error: 'API Error' };
-        }
+    this.server.get(
+      'https://api.github.com/repos/:owner/:repo/branches',
+      () => {
+        return new Response(500, {}, 'API Error');
       },
     );
 

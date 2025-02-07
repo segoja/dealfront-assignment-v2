@@ -23,7 +23,7 @@ export default class RepoSerializer extends RESTSerializer {
           },
         };
       }),
-      meta: payload.meta,
+      meta: payload.meta || {},
     };
   }
 }

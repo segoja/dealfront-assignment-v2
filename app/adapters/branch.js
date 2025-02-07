@@ -22,11 +22,11 @@ export default class BranchAdapter extends RESTAdapter {
       page,
     });
 
-    let totalPages = this.extractTotalPages(response.headers) || 1; // Ensure a default value
+    let totalPages = this.extractTotalPages(response.headers) || 0;
 
     return {
       data: response.data.map((branch) => ({
-        id: branch.name.toString(),
+        id: repoId + '-' + branch.name.toString(),
         attributes: {
           name: branch.name,
           protected: branch.protected,
