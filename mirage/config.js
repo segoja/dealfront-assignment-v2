@@ -28,6 +28,10 @@ function routes() {
       return new Response(500, {}, 'API Error');
     }
 
+    if (org === 'empty-org') {
+      return new Response(200, {}, []);
+    }
+
     let repos = [...Array(50).keys()].map((i) => ({
       id: i + 1,
       name: `${org}-repo-${i + 1}`,
@@ -39,12 +43,8 @@ function routes() {
       branches_url: `https://api.github.com/repos/${org}/repo-${i + 1}/branches{/branch}`,
     }));
 
-    let filteredRepos = repos.filter((repo) => repo.owner.login != 'empty-org');
-    let totalPages = Math.ceil(filteredRepos.length / perPage);
-    let paginatedRepos = filteredRepos.slice(
-      (page - 1) * perPage,
-      page * perPage,
-    );
+    let totalPages = Math.ceil(repos.length / perPage);
+    let paginatedRepos = repos.slice((page - 1) * perPage, page * perPage);
 
     let linkHeader =
       totalPages > 1 && page < totalPages
@@ -67,7 +67,7 @@ function routes() {
       let perPage = Number(request.queryParams.per_page) || 10;
 
       let branches = [...Array(25).keys()].map((i) => ({
-        name: `branch-${(page - 1) * perPage + i + 1}`,
+        name: `${repo}-branch-${i + 1}`,
         protected: i % 2 === 0,
       }));
 
